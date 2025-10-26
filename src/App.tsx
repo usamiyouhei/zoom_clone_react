@@ -6,12 +6,19 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Meeting from './pages/Meeting'
 import Settings from './pages/Settings'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { authRepository } from './modules/auth/auth.repository'
+import { useSetAtom } from 'jotai'
+import { currentUserAtom } from './modules/auth/current-user.state'
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const setCurrentUser = useSetAtom(currentUserAtom);
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [])
+
 
   const fetchCurrentUser = async() => {
     try {
@@ -19,11 +26,12 @@ function App() {
       setCurrentUser(user)
     } catch (error) {
       console.log(error);
-      
     }finally{
       setIsLoading(false)
     }
   }
+
+  if(isLoading) return <div/>;
 
   return <BrowserRouter>
   <Routes>
