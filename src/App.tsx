@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react'
 import { authRepository } from './modules/auth/auth.repository'
 import { useSetAtom } from 'jotai'
 import { currentUserAtom } from './modules/auth/current-user.state'
+import AuthGuard from './components/AuthGuard'
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -35,11 +36,13 @@ function App() {
 
   return <BrowserRouter>
   <Routes>
-    <Route path='/' element={<Home />}/>
     <Route path='/login' element={<Login />}/>
     <Route path='/signup' element={<Signup />}/>
-    <Route path='/meetings/:id' element={<Meeting />}/>
-    <Route path='/settings' element={<Settings />}/>
+    <Route path='/' element={<AuthGuard />}>
+      <Route index element={<Home />}/>
+      <Route path='/meetings/:id' element={<Meeting />}/>
+      <Route path='/settings' element={<Settings />}/>
+    </Route>
   </Routes>
   </BrowserRouter>
 
