@@ -1,7 +1,13 @@
 import { VideoTile } from './VideoTile';
 import { MediaControls } from './MediaControls';
+import type { Participant } from '../../modules/meetings/meeting.hook';
 
-export function PreviewMedia() {
+interface PreviewMediaProps {
+  participant: Participant;
+}
+
+export function PreviewMedia({ participant }: PreviewMediaProps) {
+
   return (
     <div className='meeting-container'>
       <div className='preview-screen'>
@@ -11,7 +17,7 @@ export function PreviewMedia() {
         </div>
 
         <div className='preview-video-container'>
-          <VideoTile />
+          <VideoTile participant={participant}/>
         </div>
 
         <MediaControls />
