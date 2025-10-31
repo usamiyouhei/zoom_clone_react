@@ -13,6 +13,7 @@ function Meeting() {
   const [showPreview, setShowPreview] = useState(true);
   const { me, getStream, toggleVideo, toggleVoice } = useMeeting();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     initialize()
@@ -23,6 +24,7 @@ function Meeting() {
     try {
       await meetingRepository.joinMeeting(id!);
       await getStream()
+      setIsLoading(false)
     } catch (error) {
       console.error(error);
     }
@@ -39,6 +41,7 @@ function Meeting() {
   if(showPreview) {
     return (
       <PreviewMedia
+        isLoading={isLoading}
         participant={me}
         onToggleVideo={toggleVideo}
         onToggleVoice={toggleVoice}
