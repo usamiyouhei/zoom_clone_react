@@ -6,12 +6,17 @@ interface PreviewMediaProps {
   participant: Participant;
   onToggleVideo: () => void;
   onToggleVoice: () => void;
+  onJoin:() => void;
+  onCancel: () => void
+
 }
 
 export function PreviewMedia({ 
   participant,
   onToggleVideo,
   onToggleVoice,
+  onJoin,
+  onCancel
  }: PreviewMediaProps) {
 
   return (
@@ -35,8 +40,8 @@ export function PreviewMedia({
         />
 
         <div className='preview-actions'>
-          <button className='control-button cancel-button'>キャンセル</button>
-          <button className='join-meeting-button'>会議に参加</button>
+          <button className='control-button cancel-button' onClick={onCancel}>キャンセル</button>
+          <button className='join-meeting-button' onClick={onJoin}>会議に参加</button>
         </div>
       </div>
     </div>
