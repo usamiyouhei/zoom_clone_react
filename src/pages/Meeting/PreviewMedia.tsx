@@ -4,9 +4,15 @@ import type { Participant } from '../../modules/meetings/meeting.hook';
 
 interface PreviewMediaProps {
   participant: Participant;
+  onToggleVideo: () => void;
+  onToggleVoice: () => void;
 }
 
-export function PreviewMedia({ participant }: PreviewMediaProps) {
+export function PreviewMedia({ 
+  participant,
+  onToggleVideo,
+  onToggleVoice,
+ }: PreviewMediaProps) {
 
   return (
     <div className='meeting-container'>
@@ -20,7 +26,13 @@ export function PreviewMedia({ participant }: PreviewMediaProps) {
           <VideoTile participant={participant}/>
         </div>
 
-        <MediaControls />
+        <MediaControls
+        cameraOn={participant.cameraOn}
+        voiceOn={participant.voiceOn}
+        onToggleVideo={onToggleVideo}
+        onToggleVoice={onToggleVoice}
+
+        />
 
         <div className='preview-actions'>
           <button className='control-button cancel-button'>キャンセル</button>
