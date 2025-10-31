@@ -41,7 +41,10 @@ function Meeting() {
       <PreviewMedia
         participant={me}
         onToggleVideo={toggleVideo}
-        onToggleVoice={toggleVoice}/>)
+        onToggleVoice={toggleVoice}
+        onJoin={joinMeeting}
+        onCancel={leaveMeeting}
+        />)
   }
 
   return (
