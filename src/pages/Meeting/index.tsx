@@ -2,7 +2,7 @@ import { FiMessageCircle, FiPhone, FiCopy } from 'react-icons/fi';
 import './Meeting.css';
 import { VideoTile } from './VideoTile';
 import { MediaControls } from './MediaControls';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { meetingRepository } from '../../modules/meetings/meeting.repository';
 import { useEffect, useState } from 'react';
 import { PreviewMedia } from './PreviewMedia';
@@ -11,7 +11,8 @@ import { useMeeting } from '../../modules/meetings/meeting.hook';
 function Meeting() {
   const { id } = useParams()
   const [showPreview, setShowPreview] = useState(true);
-  const { me, getStream, toggleVideo, toggleVoice } = useMeeting()
+  const { me, getStream, toggleVideo, toggleVoice } = useMeeting();
+  const navigate = useNavigate();
 
   useEffect(() => {
     initialize()
@@ -25,6 +26,14 @@ function Meeting() {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  const joinMeeting = async () => {
+    setShowPreview(false);
+  };
+
+  const leaveMeeting = async() => {
+    navigate('/')
   }
 
   if(showPreview) {
