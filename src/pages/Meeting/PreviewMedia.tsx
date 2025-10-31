@@ -3,6 +3,7 @@ import { MediaControls } from './MediaControls';
 import type { Participant } from '../../modules/meetings/meeting.hook';
 
 interface PreviewMediaProps {
+  isLoading: boolean;
   participant: Participant;
   onToggleVideo: () => void;
   onToggleVoice: () => void;
@@ -11,14 +12,25 @@ interface PreviewMediaProps {
 
 }
 
-export function PreviewMedia({ 
+export function PreviewMedia({
+  isLoading,
   participant,
   onToggleVideo,
   onToggleVoice,
   onJoin,
   onCancel
  }: PreviewMediaProps) {
-
+  if(isLoading) {
+    return (
+      <div className="meeting-container">
+        <div className="preview-screen">
+          <div className="preview-header">
+            <h2>Loading...</h2>
+          </div>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className='meeting-container'>
       <div className='preview-screen'>
