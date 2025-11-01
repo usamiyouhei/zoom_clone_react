@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { currentUserAtom } from "../auth/current-user.state";
 import { io, Socket } from "socket.io-client"
-import Peer from "peerjs"
+import Peer, { MediaConnection } from "peerjs"
 export interface Participant {
   id: string;
   name: string;
@@ -68,10 +68,12 @@ export const useMeeting = (meetingId: string) => {
 
     socketRef.current = io(import.meta.env.VITE_API_URL);
     const socket = socketRef.current;
-    socket.on("connect", () => hanndleSocketConnected());
+    socket.on("connect", () => hanndleSocketConnected(localStream));
+
+    socket.on('participant-joined', (data) => handleJoined(data, localStream))
   };
 
-  const hanndleSocketConnected = () => {
+  const hanndleSocketConnected = (localStream: MediaStream) => {
     const socket = socketRef.current;
     if (socket == null) return;
 
@@ -89,10 +91,19 @@ export const useMeeting = (meetingId: string) => {
         voiceOn: me.voiceOn,
         cameraOn: me.cameraOn,
       })
+    });
+
+    peer.on("call", (MediaConn) => {
+      MediaConn.answer(localStream)
     })
   };
 
-
+  const handleJoined = (data:any, localStream: MediaStream) => {
+    if(peerRef.current == null) return;
+    data.participants.forEach((participant: Participant) => {
+      const call = peerRef.current!.call(participant.id, localStream)
+    });
+  }
 
   return { me , getStream, toggleVideo, toggleVoice, join}
 }
