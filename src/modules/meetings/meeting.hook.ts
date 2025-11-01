@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { currentUserAtom } from "../auth/current-user.state";
-
+import { io, Socket } from "socket.io-client"
 export interface Participant {
   id: string;
   name: string;
@@ -21,10 +21,11 @@ export const useMeeting = () => {
     voiceOn: true,
   })
 
+  const socketRef = useRef<Socket>(null)
+
   useEffect(() => {
     setMe((prev) => ({ ...prev, stream: localStreams[0]}))
   }, [localStreams])
-  
 
   const getStream = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -57,7 +58,15 @@ export const useMeeting = () => {
       voiceOn = audioTracks[0]?.enabled;
     }
     setMe((prev) => ({ ...prev, voiceOn }))
+  };
+
+  const join = async() => {
+    const localStream = me.stream;
+    if(localStream == null || currentUser == null) return;
+    io(import.meta.env.VITE_API_URL);
   }
+
+
 
   return { me , getStream, toggleVideo, toggleVoice }
 }
