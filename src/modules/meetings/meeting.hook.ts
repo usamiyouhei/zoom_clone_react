@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { currentUserAtom } from "../auth/current-user.state";
 import { io, Socket } from "socket.io-client"
-import Peer, { MediaConnection } from "peerjs"
+import Peer from "peerjs"
 export interface Participant {
   id: string;
   name: string;
@@ -23,7 +23,11 @@ export const useMeeting = (meetingId: string) => {
   })
 
   const socketRef = useRef<Socket>(null)
-  const peerRef = useRef<Peer>(null)
+  const peerRef = useRef<Peer>(null);
+  const [participants, setParticipants] = useState<Map<string, Participant>>(
+    new Map()
+  );
+  
 
   useEffect(() => {
     setMe((prev) => ({ ...prev, stream: localStreams[0]}))
@@ -101,9 +105,20 @@ export const useMeeting = (meetingId: string) => {
   const handleJoined = (data:any, localStream: MediaStream) => {
     if(peerRef.current == null) return;
     data.participants.forEach((participant: Participant) => {
-      const call = peerRef.current!.call(participant.id, localStream)
+      const call = peerRef.current!.call(participant.id, localStream);
+
+      call.on("stream", (remoteStream) => {
+        setParticipants((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(participant.id, {
+            ...participant,
+            stream: remoteStream,
+          });
+          return newMap;
+        })
+      })
     });
   }
 
-  return { me , getStream, toggleVideo, toggleVoice, join}
+  return { me , getStream, toggleVideo, toggleVoice, join, participants}
 }
