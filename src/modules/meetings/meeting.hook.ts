@@ -52,6 +52,13 @@ export const useMeeting = (meetingId: string) => {
       cameraOn = videoTracks[0]?.enabled;
     }
     setMe((prev) => ({ ...prev, cameraOn }))
+
+    socketRef.current?.emit('update-participant', meetingId, {
+      id: me.id,
+      name: me.name,
+      voiceOn: me.voiceOn,
+      cameraOn,
+    })
   }
   const toggleVoice = () => {
     let voiceOn = false;
@@ -63,7 +70,14 @@ export const useMeeting = (meetingId: string) => {
       });
       voiceOn = audioTracks[0]?.enabled;
     }
-    setMe((prev) => ({ ...prev, voiceOn }))
+    setMe((prev) => ({ ...prev, voiceOn }));
+
+    socketRef.current?.emit('update-participant', meetingId, {
+      id: me.id,
+      name: me.name,
+      voiceOn,
+      cameraOn: me.cameraOn,
+    })
   };
 
   const join = async() => {
@@ -74,7 +88,18 @@ export const useMeeting = (meetingId: string) => {
     const socket = socketRef.current;
     socket.on("connect", () => hanndleSocketConnected(localStream));
 
-    socket.on('participant-joined', (data) => handleJoined(data, localStream))
+    socket.on('participant-joined', (data) => handleJoined(data, localStream));
+
+    socket.on('participant-updated', (data) => {
+      setParticipants((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(data.participant.id, {
+          ...data.participant,
+          stream: prev.get(data.participant.id)?.stream,
+        });
+        return newMap
+      })
+    })
   };
 
   const hanndleSocketConnected = (localStream: MediaStream) => {
