@@ -11,6 +11,7 @@ import { authRepository } from './modules/auth/auth.repository'
 import { useSetAtom } from 'jotai'
 import { currentUserAtom } from './modules/auth/current-user.state'
 import AuthGuard from './components/AuthGuard'
+import { FlashMessage } from './components/FlashMessage'
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +45,7 @@ function App() {
       <Route path='/settings' element={<Settings />}/>
     </Route>
   </Routes>
+  <FlashMessage/>
   </BrowserRouter>
 
 }

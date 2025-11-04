@@ -7,6 +7,8 @@ import { meetingRepository } from '../../modules/meetings/meeting.repository';
 import { useEffect, useState } from 'react';
 import { PreviewMedia } from './PreviewMedia';
 import { useMeeting } from '../../modules/meetings/meeting.hook';
+import { useFlashMessage } from '../../modules/ui/ui.state';
+
 
 function Meeting() {
   const { id } = useParams()
@@ -14,6 +16,7 @@ function Meeting() {
   const { me, getStream, toggleVideo, toggleVoice, join, participants } = useMeeting(id!);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const { addMessage } = useFlashMessage();
 
   useEffect(() => {
     initialize()
@@ -39,6 +42,18 @@ function Meeting() {
     navigate('/')
   }
 
+  const copyMeetingId = async() => {
+    try {
+      await navigator.clipboard.writeText(id!);
+      addMessage({
+        message: 'ミーティングIDをコピーしました',
+        type: 'success',
+      })
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
   if(showPreview) {
     return (
       <PreviewMedia
@@ -77,7 +92,7 @@ function Meeting() {
           <FiMessageCircle />
         </button>
 
-        <button className='control-button'>
+        <button className='control-button' onClick={copyMeetingId}>
           <FiCopy />
         </button>
 
