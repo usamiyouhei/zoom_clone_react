@@ -101,6 +101,14 @@ export const useMeeting = (meetingId: string) => {
         return newMap
       })
     })
+
+    socket.on("participant-left", (data) => {
+      setParticipants((prev) => {
+        const newMap = new Map(prev);
+        newMap.delete(data.leftParticipantId);
+        return newMap;
+      })
+    })
   };
 
   const hanndleSocketConnected = (localStream: MediaStream) => {
@@ -150,5 +158,15 @@ export const useMeeting = (meetingId: string) => {
     });
   }
 
-  return { me , getStream, toggleVideo, toggleVoice, join, participants}
+  const clear = () => {
+    socketRef.current?.emit('leave-meeting', meetingId, me.id);
+    localStreams.forEach((stream) => {
+      stream.getTracks().forEach((track) => track.stop());
+    });
+    setLocalStreams([]);
+    peerRef.current?.destroy();
+    socketRef.current?.disconnect();
+  };
+
+  return { me , getStream, toggleVideo, toggleVoice, join, participants, clear }
 }
