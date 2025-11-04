@@ -9,6 +9,7 @@ export interface Participant {
   stream: MediaStream | null;
   cameraOn: boolean;
   voiceOn: boolean;
+  isHost?: boolean;
 }
 
 export const useMeeting = (meetingId: string) => {
@@ -127,9 +128,10 @@ export const useMeeting = (meetingId: string) => {
     })
   };
 
-  const handleJoined = (data:any, localStream: MediaStream) => {
+  const handleJoined = (data: any, localStream: MediaStream) => {
     if(peerRef.current == null) return;
     data.participants.forEach((participant: Participant) => {
+      if(participant.id !== me.id){
       const call = peerRef.current!.call(participant.id, localStream);
 
       call.on("stream", (remoteStream) => {
@@ -142,6 +144,9 @@ export const useMeeting = (meetingId: string) => {
           return newMap;
         })
       })
+    } else {
+      setMe((prev) => ({ ...prev, isHost: participant.isHost}))
+    }
     });
   }
 

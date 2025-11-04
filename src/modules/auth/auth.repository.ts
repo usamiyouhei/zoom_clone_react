@@ -31,7 +31,7 @@ export const authRepository = {
   },
   async getCurrentUser(): Promise<User | undefined> {
     const result = await api.get('/auth/me')
-    if(result.data) return undefined
+    if(result.data == null) return undefined
 
     return new User(result.data)
   },
