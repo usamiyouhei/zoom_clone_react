@@ -13,13 +13,16 @@ import { useFlashMessage } from '../../modules/ui/ui.state';
 function Meeting() {
   const { id } = useParams()
   const [showPreview, setShowPreview] = useState(true);
-  const { me, getStream, toggleVideo, toggleVoice, join, participants } = useMeeting(id!);
+  const { me, getStream, toggleVideo, toggleVoice, join, participants, clear } = useMeeting(id!);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const { addMessage } = useFlashMessage();
 
   useEffect(() => {
-    initialize()
+    initialize();
+    return () => {
+      clear();
+    }
   }, [])
 
 
@@ -39,7 +42,8 @@ function Meeting() {
   };
 
   const leaveMeeting = async() => {
-    navigate('/')
+    clear();
+    navigate('/');
   }
 
   const copyMeetingId = async() => {
@@ -53,7 +57,7 @@ function Meeting() {
       console.error(error);
     }
   };
-  
+
   if(showPreview) {
     return (
       <PreviewMedia
@@ -96,7 +100,7 @@ function Meeting() {
           <FiCopy />
         </button>
 
-        <button className='control-button leave-button'>
+        <button className='control-button leave-button' onClick={leaveMeeting}>
           <FiPhone />
         </button>
       </div>
