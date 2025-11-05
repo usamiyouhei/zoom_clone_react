@@ -1,11 +1,15 @@
 import { FiSend, FiX } from 'react-icons/fi';
 
-export function Chat() {
+interface ChatProps {
+  onClose: () => void;
+}
+
+export function Chat({ onClose }: ChatProps) {
   return (
     <div className='chat-sidebar'>
       <div className='chat-header'>
         <h3>チャット</h3>
-        <button className='close-chat'>
+        <button className='close-chat' onClick={onClose}>
           <FiX />
         </button>
       </div>

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { PreviewMedia } from './PreviewMedia';
 import { useMeeting } from '../../modules/meetings/meeting.hook';
 import { useFlashMessage } from '../../modules/ui/ui.state';
+import { Chat } from './Chat';
 
 
 function Meeting() {
@@ -17,6 +18,7 @@ function Meeting() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const { addMessage } = useFlashMessage();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     initialize();
@@ -72,7 +74,7 @@ function Meeting() {
 
   return (
     <div className='meeting-container'>
-      <div className='video-area'>
+      <div className={`video-area ${isChatOpen ? 'with-chat' : ''}`}>
         <div className='video-grid'>
           <VideoTile participant={{
             ...me,
@@ -84,6 +86,8 @@ function Meeting() {
         </div>
       </div>
 
+      {isChatOpen && <Chat onClose={() => setIsChatOpen(false)}/>}
+
       <div className='control-bar'>
         <MediaControls
           cameraOn={me.cameraOn}
@@ -92,7 +96,10 @@ function Meeting() {
           onToggleVoice={toggleVoice}
         />
 
-        <button className='control-button'>
+        <button
+          className='control-button'
+          onClick={() => setIsChatOpen(!isChatOpen)}
+        >
           <FiMessageCircle />
         </button>
 
