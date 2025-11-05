@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { currentUserAtom } from "../auth/current-user.state";
 import { io, Socket } from "socket.io-client"
 import Peer from "peerjs"
+import { useNavigate } from "react-router-dom";
+import { useFlashMessage } from "../ui/ui.state";
 export interface Participant {
   id: string;
   name: string;
@@ -28,7 +30,8 @@ export const useMeeting = (meetingId: string) => {
   const [participants, setParticipants] = useState<Map<string, Participant>>(
     new Map()
   );
-  
+  const navigate = useNavigate();
+  const { addMessage } = useFlashMessage();
 
   useEffect(() => {
     setMe((prev) => ({ ...prev, stream: localStreams[0]}))
@@ -99,8 +102,9 @@ export const useMeeting = (meetingId: string) => {
           stream: prev.get(data.participant.id)?.stream,
         });
         return newMap
-      })
+      });
     })
+
 
     socket.on("participant-left", (data) => {
       setParticipants((prev) => {
@@ -109,6 +113,12 @@ export const useMeeting = (meetingId: string) => {
         return newMap;
       })
     })
+
+    socket.on('close', () => {
+        clear();
+        addMessage({ message: 'ミーティングが終了しました', type: 'success'})
+        navigate('/');
+    });
   };
 
   const hanndleSocketConnected = (localStream: MediaStream) => {
