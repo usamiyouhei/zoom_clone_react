@@ -3,10 +3,13 @@ import { FiVideo, FiUser, FiSettings, FiLogOut } from "react-icons/fi";
 import "./Home.css";
 import { meetingRepository } from "../../modules/meetings/meeting.repository";
 import { useState } from "react";
+import { useAtom } from "jotai";
+import { currentUserAtom } from "../../modules/auth/current-user.state";
 
 function Home() {
   const navigate = useNavigate();
   const [meetingId, setMeetingId] = useState("");
+  const [currentUser] = useAtom(currentUserAtom);
 
   const startMeeting = async () => {
     try {

@@ -127,7 +127,7 @@ export const useMeeting = (meetingId: string) => {
       navigate("/");
     });
 
-    socket.on("recive-chat", (chat: ChatMessage) => {
+    socket.on("receive-chat", (chat: ChatMessage) => {
       setChats((prev) => [
         ...prev,
         {
@@ -183,6 +183,13 @@ export const useMeeting = (meetingId: string) => {
         setMe((prev) => ({ ...prev, isHost: participant.isHost }));
       }
     });
+
+    setChats(
+      data.chats?.map((chat: ChatMessage) => ({
+        ...chat,
+        createdAt: new Date(chat.createdAt),
+      })) || []
+    );
   };
 
   const clear = () => {
@@ -206,6 +213,7 @@ export const useMeeting = (meetingId: string) => {
     me,
     getStream,
     toggleVideo,
+    toggleVoice,
     join,
     participants,
     clear,

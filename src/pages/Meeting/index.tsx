@@ -13,8 +13,17 @@ import { Chat } from "./Chat";
 function Meeting() {
   const { id } = useParams();
   const [showPreview, setShowPreview] = useState(true);
-  const { me, getStream, toggleVideo, toggleVoice, join, participants, clear } =
-    useMeeting(id!);
+  const {
+    me,
+    getStream,
+    toggleVideo,
+    toggleVoice,
+    join,
+    participants,
+    clear,
+    chats,
+    sendChatMessage,
+  } = useMeeting(id!);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const { addMessage } = useFlashMessage();
@@ -88,7 +97,13 @@ function Meeting() {
         </div>
       </div>
 
-      {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
+      {isChatOpen && (
+        <Chat
+          onClose={() => setIsChatOpen(false)}
+          chatMessages={chats}
+          onSubmit={sendChatMessage}
+        />
+      )}
 
       <div className="control-bar">
         <MediaControls
