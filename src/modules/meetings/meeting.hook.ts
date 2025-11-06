@@ -1,10 +1,17 @@
 import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { currentUserAtom } from "../auth/current-user.state";
-import { io, Socket } from "socket.io-client"
-import Peer from "peerjs"
+import { io, Socket } from "socket.io-client";
+import Peer from "peerjs";
 import { useNavigate } from "react-router-dom";
 import { useFlashMessage } from "../ui/ui.state";
+
+export interface ChatMessage {
+  id: string;
+  userName: string;
+  message: string;
+  createdAt: Date;
+}
 export interface Participant {
   id: string;
   name: string;
@@ -19,55 +26,56 @@ export const useMeeting = (meetingId: string) => {
   const currentUser = useAtomValue(currentUserAtom);
   const [me, setMe] = useState<Participant>({
     id: currentUser!.id,
-    name:currentUser!.name,
+    name: currentUser!.name,
     stream: localStreams[0],
     cameraOn: true,
     voiceOn: true,
-  })
+  });
 
-  const socketRef = useRef<Socket>(null)
+  const socketRef = useRef<Socket>(null);
   const peerRef = useRef<Peer>(null);
   const [participants, setParticipants] = useState<Map<string, Participant>>(
     new Map()
   );
   const navigate = useNavigate();
   const { addMessage } = useFlashMessage();
+  const [chats, setChats] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
-    setMe((prev) => ({ ...prev, stream: localStreams[0]}))
-  }, [localStreams])
+    setMe((prev) => ({ ...prev, stream: localStreams[0] }));
+  }, [localStreams]);
 
   const getStream = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true,
     });
-    setLocalStreams((prev) => [...prev, stream])
+    setLocalStreams((prev) => [...prev, stream]);
   };
 
   const toggleVideo = () => {
     let cameraOn = false;
     const localStream = me.stream;
-    if(localStream != null) {
+    if (localStream != null) {
       const videoTracks = localStream.getVideoTracks();
       videoTracks.forEach((track) => {
         track.enabled = !track.enabled;
       });
       cameraOn = videoTracks[0]?.enabled;
     }
-    setMe((prev) => ({ ...prev, cameraOn }))
+    setMe((prev) => ({ ...prev, cameraOn }));
 
-    socketRef.current?.emit('update-participant', meetingId, {
+    socketRef.current?.emit("update-participant", meetingId, {
       id: me.id,
       name: me.name,
       voiceOn: me.voiceOn,
       cameraOn,
-    })
-  }
+    });
+  };
   const toggleVoice = () => {
     let voiceOn = false;
     const localStream = me.stream;
-    if(localStream != null) {
+    if (localStream != null) {
       const audioTracks = localStream.getAudioTracks();
       audioTracks.forEach((track) => {
         track.enabled = !track.enabled;
@@ -76,48 +84,57 @@ export const useMeeting = (meetingId: string) => {
     }
     setMe((prev) => ({ ...prev, voiceOn }));
 
-    socketRef.current?.emit('update-participant', meetingId, {
+    socketRef.current?.emit("update-participant", meetingId, {
       id: me.id,
       name: me.name,
       voiceOn,
       cameraOn: me.cameraOn,
-    })
+    });
   };
 
-  const join = async() => {
+  const join = async () => {
     const localStream = me.stream;
-    if(localStream == null || currentUser == null) return;
+    if (localStream == null || currentUser == null) return;
 
     socketRef.current = io(import.meta.env.VITE_API_URL);
     const socket = socketRef.current;
     socket.on("connect", () => hanndleSocketConnected(localStream));
 
-    socket.on('participant-joined', (data) => handleJoined(data, localStream));
+    socket.on("participant-joined", (data) => handleJoined(data, localStream));
 
-    socket.on('participant-updated', (data) => {
+    socket.on("participant-updated", (data) => {
       setParticipants((prev) => {
         const newMap = new Map(prev);
         newMap.set(data.participant.id, {
           ...data.participant,
           stream: prev.get(data.participant.id)?.stream,
         });
-        return newMap
+        return newMap;
       });
-    })
-
+    });
 
     socket.on("participant-left", (data) => {
       setParticipants((prev) => {
         const newMap = new Map(prev);
         newMap.delete(data.leftParticipantId);
         return newMap;
-      })
-    })
+      });
+    });
 
-    socket.on('close', () => {
-        clear();
-        addMessage({ message: 'ミーティングが終了しました', type: 'success'})
-        navigate('/');
+    socket.on("close", () => {
+      clear();
+      addMessage({ message: "ミーティングが終了しました", type: "success" });
+      navigate("/");
+    });
+
+    socket.on("recive-chat", (chat: ChatMessage) => {
+      setChats((prev) => [
+        ...prev,
+        {
+          ...chat,
+          createdAt: new Date(chat.createdAt),
+        },
+      ]);
     });
   };
 
@@ -125,58 +142,74 @@ export const useMeeting = (meetingId: string) => {
     const socket = socketRef.current;
     if (socket == null) return;
 
-    peerRef.current = new Peer(me.id,{
+    peerRef.current = new Peer(me.id, {
       host: "0.peerjs.com",
       port: 443,
       secure: true,
     });
     const peer = peerRef.current;
 
-    peer.on('open',() => {
-      socket.emit('join-meeting',meetingId, {
+    peer.on("open", () => {
+      socket.emit("join-meeting", meetingId, {
         id: me.id,
         name: me.name,
         voiceOn: me.voiceOn,
         cameraOn: me.cameraOn,
-      })
+      });
     });
 
     peer.on("call", (MediaConn) => {
-      MediaConn.answer(localStream)
-    })
+      MediaConn.answer(localStream);
+    });
   };
 
   const handleJoined = (data: any, localStream: MediaStream) => {
-    if(peerRef.current == null) return;
+    if (peerRef.current == null) return;
     data.participants.forEach((participant: Participant) => {
-      if(participant.id !== me.id){
-      const call = peerRef.current!.call(participant.id, localStream);
+      if (participant.id !== me.id) {
+        const call = peerRef.current!.call(participant.id, localStream);
 
-      call.on("stream", (remoteStream) => {
-        setParticipants((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(participant.id, {
-            ...participant,
-            stream: remoteStream,
+        call.on("stream", (remoteStream) => {
+          setParticipants((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(participant.id, {
+              ...participant,
+              stream: remoteStream,
+            });
+            return newMap;
           });
-          return newMap;
-        })
-      })
-    } else {
-      setMe((prev) => ({ ...prev, isHost: participant.isHost}))
-    }
+        });
+      } else {
+        setMe((prev) => ({ ...prev, isHost: participant.isHost }));
+      }
     });
-  }
+  };
 
   const clear = () => {
-    socketRef.current?.emit('leave-meeting', meetingId, me.id);
+    socketRef.current?.emit("leave-meeting", meetingId, me.id);
     localStreams.forEach((stream) => {
       stream.getTracks().forEach((track) => track.stop());
     });
     setLocalStreams([]);
+    setChats([]);
     peerRef.current?.destroy();
     socketRef.current?.disconnect();
   };
 
-  return { me , getStream, toggleVideo, toggleVoice, join, participants, clear }
-}
+  const sendChatMessage = (message: string) => {
+    if (socketRef.current && currentUser) {
+      socketRef.current.emit("send-chat", meetingId, message, currentUser.name);
+    }
+  };
+
+  return {
+    me,
+    getStream,
+    toggleVideo,
+    join,
+    participants,
+    clear,
+    chats,
+    sendChatMessage,
+  };
+};

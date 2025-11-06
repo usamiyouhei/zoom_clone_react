@@ -1,20 +1,20 @@
-import { FiMessageCircle, FiPhone, FiCopy } from 'react-icons/fi';
-import './Meeting.css';
-import { VideoTile } from './VideoTile';
-import { MediaControls } from './MediaControls';
-import { useNavigate, useParams } from 'react-router-dom';
-import { meetingRepository } from '../../modules/meetings/meeting.repository';
-import { useEffect, useState } from 'react';
-import { PreviewMedia } from './PreviewMedia';
-import { useMeeting } from '../../modules/meetings/meeting.hook';
-import { useFlashMessage } from '../../modules/ui/ui.state';
-import { Chat } from './Chat';
-
+import { FiMessageCircle, FiPhone, FiCopy } from "react-icons/fi";
+import "./Meeting.css";
+import { VideoTile } from "./VideoTile";
+import { MediaControls } from "./MediaControls";
+import { useNavigate, useParams } from "react-router-dom";
+import { meetingRepository } from "../../modules/meetings/meeting.repository";
+import { useEffect, useState } from "react";
+import { PreviewMedia } from "./PreviewMedia";
+import { useMeeting } from "../../modules/meetings/meeting.hook";
+import { useFlashMessage } from "../../modules/ui/ui.state";
+import { Chat } from "./Chat";
 
 function Meeting() {
-  const { id } = useParams()
+  const { id } = useParams();
   const [showPreview, setShowPreview] = useState(true);
-  const { me, getStream, toggleVideo, toggleVoice, join, participants, clear } = useMeeting(id!);
+  const { me, getStream, toggleVideo, toggleVoice, join, participants, clear } =
+    useMeeting(id!);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const { addMessage } = useFlashMessage();
@@ -24,43 +24,42 @@ function Meeting() {
     initialize();
     return () => {
       clear();
-    }
-  }, [])
-
+    };
+  }, []);
 
   const initialize = async () => {
     try {
       await meetingRepository.joinMeeting(id!);
-      await getStream()
-      setIsLoading(false)
+      await getStream();
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   const joinMeeting = async () => {
-    join()
+    join();
     setShowPreview(false);
   };
 
-  const leaveMeeting = async() => {
+  const leaveMeeting = async () => {
     clear();
-    navigate('/');
-  }
+    navigate("/");
+  };
 
-  const copyMeetingId = async() => {
+  const copyMeetingId = async () => {
     try {
       await navigator.clipboard.writeText(id!);
       addMessage({
-        message: 'ミーティングIDをコピーしました',
-        type: 'success',
-      })
+        message: "ミーティングIDをコピーしました",
+        type: "success",
+      });
     } catch (error) {
       console.error(error);
     }
   };
 
-  if(showPreview) {
+  if (showPreview) {
     return (
       <PreviewMedia
         isLoading={isLoading}
@@ -69,26 +68,29 @@ function Meeting() {
         onToggleVoice={toggleVoice}
         onJoin={joinMeeting}
         onCancel={leaveMeeting}
-        />)
+      />
+    );
   }
 
   return (
-    <div className='meeting-container'>
-      <div className={`video-area ${isChatOpen ? 'with-chat' : ''}`}>
-        <div className='video-grid'>
-          <VideoTile participant={{
-            ...me,
-            name: me.name + '(あなた)'
-          }}/>
+    <div className="meeting-container">
+      <div className={`video-area ${isChatOpen ? "with-chat" : ""}`}>
+        <div className="video-grid">
+          <VideoTile
+            participant={{
+              ...me,
+              name: me.name + "(あなた)",
+            }}
+          />
           {Array.from(participants.values()).map((participant) => (
-            <VideoTile key={participant.id} participant={participant}/>
+            <VideoTile key={participant.id} participant={participant} />
           ))}
         </div>
       </div>
 
-      {isChatOpen && <Chat onClose={() => setIsChatOpen(false)}/>}
+      {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
 
-      <div className='control-bar'>
+      <div className="control-bar">
         <MediaControls
           cameraOn={me.cameraOn}
           voiceOn={me.voiceOn}
@@ -97,17 +99,17 @@ function Meeting() {
         />
 
         <button
-          className='control-button'
+          className="control-button"
           onClick={() => setIsChatOpen(!isChatOpen)}
         >
           <FiMessageCircle />
         </button>
 
-        <button className='control-button' onClick={copyMeetingId}>
+        <button className="control-button" onClick={copyMeetingId}>
           <FiCopy />
         </button>
 
-        <button className='control-button leave-button' onClick={leaveMeeting}>
+        <button className="control-button leave-button" onClick={leaveMeeting}>
           <FiPhone />
         </button>
       </div>
