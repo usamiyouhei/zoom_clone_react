@@ -31,8 +31,8 @@ function Home() {
           <h1 className="logo">Zoom Clone</h1>
         </div>
         <div className="navbar-right">
-          <span className="username">田中太郎</span>
-          <Link to="" className="settings-button">
+          <span className="username">{currentUser!.name}</span>
+          <Link to="/settings" className="settings-button">
             <FiSettings /> 設定
           </Link>
           <button className="logout-button">
