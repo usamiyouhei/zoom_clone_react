@@ -33,7 +33,7 @@ function Settings() {
           <h1 className="logo">Zoom Clone</h1>
         </div>
         <div className="navbar-right">
-          <Link to="" className="back-home-link">
+          <Link to="/" className="back-home-link">
             ホームに戻る
           </Link>
         </div>
