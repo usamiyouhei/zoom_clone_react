@@ -9,7 +9,7 @@ import { currentUserAtom } from "../../modules/auth/current-user.state";
 function Home() {
   const navigate = useNavigate();
   const [meetingId, setMeetingId] = useState("");
-  const [currentUser] = useAtom(currentUserAtom);
+  const [currentUser, setCurrentUser] = useAtom(currentUserAtom);
 
   const startMeeting = async () => {
     try {
@@ -24,6 +24,11 @@ function Home() {
     navigate(`/meetings/${meetingId}`);
   };
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    setCurrentUser(undefined);
+  };
+
   return (
     <div className="home-container">
       <nav className="navbar">
@@ -35,7 +40,7 @@ function Home() {
           <Link to="/settings" className="settings-button">
             <FiSettings /> 設定
           </Link>
-          <button className="logout-button">
+          <button className="logout-button" onClick={logout}>
             <FiLogOut /> ログアウト
           </button>
         </div>
